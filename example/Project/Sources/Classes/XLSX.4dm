@@ -154,7 +154,6 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 						$o[$lastCell+"1"]:=Null:C1517
 						$lastCol:=This:C1470._getDataWidth($o)
 						$colsToAppend:=$width-$lastCol
-						//TODO: add missing cols without style
 						$ref:=New collection:C1472($firstCell; $firstRow; ":"; $lastCell; $length).join("")
 						DOM SET XML ATTRIBUTE:C866($dimension; "ref"; $ref)
 						$sheetData:=DOM Find XML element:C864($dom; "/worksheet/sheetData")
@@ -162,7 +161,7 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 							ARRAY TEXT:C222($rows; 0)
 							$row:=DOM Find XML element:C864($sheetData; "row"; $rows)
 							If (OK=1)
-								$row:=$rows{Size of array:C274($rows)}
+								$row:=$rows{Size of array:C274($rows)}  //use last row as style template
 								For ($ii; 1; DOM Count XML attributes:C727($row))
 									DOM GET XML ATTRIBUTE BY INDEX:C729($row; $ii; $name; $stringValue)
 									Case of 
@@ -198,10 +197,17 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												End for 
 											End for 
 											
-											For ($iii; 3; 2+$rowsToAppend)  //row
+											$r:=String:C10($lastRow)
+											
+											For ($i; $lastCol+1; $lastCol+$colsToAppend)  //add cols to template row
+												$node:=DOM Create XML element:C865($row; "c")
+												$name:=This:C1470._getColName($i)
+												DOM SET XML ATTRIBUTE:C866($node; "r"; $name+$r)
+											End for 
+											
+											For ($iii; $lastRow+1; $lastRow+$rowsToAppend)  //append rows
 												
 												$r:=String:C10($iii)
-												
 												$row:=DOM Create XML element:C865($sheetData; "row")
 												
 												For each ($name; $rowStyle)  //except r
@@ -209,17 +215,20 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												End for each 
 												DOM SET XML ATTRIBUTE:C866($row; "r"; $r)
 												
-												For each ($name; $styles)
-													
+												For each ($name; $styles)  //copy from style template
 													$node:=DOM Create XML element:C865($row; "c")
-													
 													DOM SET XML ATTRIBUTE:C866($node; "r"; $name+$r)
-													
 													$style:=$styles[$name]
 													For each ($attribute; $style)
 														DOM SET XML ATTRIBUTE:C866($node; $attribute; $style[$attribute])
 													End for each 
 												End for each 
+												
+												For ($i; $lastCol+1; $lastCol+$colsToAppend)  //add cols
+													$node:=DOM Create XML element:C865($row; "c")
+													$name:=This:C1470._getColName($i)
+													DOM SET XML ATTRIBUTE:C866($node; "r"; $name+$r)
+												End for 
 												
 											End for 
 											
@@ -373,6 +382,16 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 	
 	return {success: $success}
 	
+Function _getColName($col : Integer) : Text
+	
+	$alphabet:="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	
+	If ($col>Length:C16($alphabet))
+		return This:C1470._getColName(($col-($col%Length:C16($alphabet)))\Length:C16($alphabet))+Substring:C12($alphabet; $col%Length:C16($alphabet); 1)
+	Else 
+		return Substring:C12($alphabet; $col; 1)
+	End if 
+	
 Function _getDataWidth($values : Object) : Integer
 	
 	var $width; $colNumber : Integer
@@ -387,7 +406,7 @@ Function _getDataWidth($values : Object) : Integer
 		If (Match regex:C1019("(\\D+)\\d+"; $cellRef; 1; $pos; $len))
 			$colNumber:=0
 			$digit:=0
-			For each ($letter; Split string:C1554(Substring:C12($cellRef; $pos{1}; $len{1}); ""))
+			For each ($letter; Split string:C1554(Substring:C12($cellRef; $pos{1}; $len{1}); "").reverse())
 				$colNumber+=(Position:C15($letter; $alphabet; *)*(Length:C16($alphabet)^$digit))
 				$digit+=1
 			End for each 
@@ -398,8 +417,6 @@ Function _getDataWidth($values : Object) : Integer
 	End for each 
 	
 	return $width
-	
-	
 	
 Function _getDataLength($values : Object) : Integer
 	
