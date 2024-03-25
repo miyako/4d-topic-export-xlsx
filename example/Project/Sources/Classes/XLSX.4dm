@@ -252,128 +252,118 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 								
 								For ($ii; 1; Size of array:C274($cs))
 									$c:=$cs{$ii}
-									For ($iii; 1; DOM Count XML attributes:C727($c))
-										DOM GET XML ATTRIBUTE BY INDEX:C729($c; $iii; $name; $stringValue)
+									
+									$cellRef:=This:C1470._getCellRef($c; "r")
+									
+									If (OB Is defined:C1231($values; $cellRef))
+										$valueType:=Value type:C1509($values[$cellRef])
 										Case of 
-											: ($name="r")
-												$cellRef:=$stringValue
-												If (OB Is defined:C1231($values; $cellRef))
-													$valueType:=Value type:C1509($values[$cellRef])
-													Case of 
-														: ($valueType=Is object:K8:27) && ($values[$cellRef].f#Null:C1517) && ($values[$cellRef].v#Null:C1517)
-															$f:=DOM Find XML element:C864($c; "f")
-															If (OK=0)
-																$f:=DOM Create XML element:C865($c; "f")
-															End if 
-															DOM SET XML ELEMENT VALUE:C868($f; $values[$cellRef].f)
-															
-															$v:=DOM Find XML element:C864($c; "v")
-															If (OK=0)
-																$v:=DOM Create XML element:C865($c; "v")
-															End if 
-															
-															$valueValueType:=Value type:C1509($values[$cellRef].v)
-															
-															Case of 
-																: ($valueValueType=Is text:K8:3) & ($isSharedStringsOpen)
-																	$v:=DOM Find XML element:C864($c; "v")
-																	If (OK=0)
-																		$v:=DOM Create XML element:C865($c; "v")
-																	End if 
-																	DOM SET XML ATTRIBUTE:C866($c; "t"; "str")  //static text
-																	DOM SET XML ELEMENT VALUE:C868($v; $values[$cellRef].v)
-																	
-																: ($valueType=Is real:K8:4)
-																	
-																	$v:=DOM Find XML element:C864($c; "v")
-																	If (OK=0)
-																		$v:=DOM Create XML element:C865($c; "v")
-																	End if 
-																	DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v))
-																	
-																: ($valueType=Is boolean:K8:9)
-																	
-																	$v:=DOM Find XML element:C864($c; "v")
-																	If (OK=0)
-																		$v:=DOM Create XML element:C865($c; "v")
-																	End if 
-																	DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v ? 1 : 0))
-																	
-																: ($valueType=Is date:K8:7)
-																	
-																	$v:=DOM Find XML element:C864($c; "v")
-																	If (OK=0)
-																		$v:=DOM Create XML element:C865($c; "v")
-																	End if 
-																	DOM SET XML ELEMENT VALUE:C868($v; This:C1470.convertToMicrosoftDate($values[$cellRef].v))
-																Else 
-																	TRACE:C157  //invalid value type!
-															End case 
-															
-														: ($valueType=Is text:K8:3) & ($isSharedStringsOpen)
-															$v:=DOM Find XML element:C864($c; "v")
-															If (OK=0)
-																$v:=DOM Create XML element:C865($c; "v")
-															End if 
-															DOM SET XML ATTRIBUTE:C866($c; "t"; "s")  //shared string
-															$stringValue:=$values[$cellRef]
-															$hash:=Generate digest:C1147($stringValue; MD5 digest:K66:1)
-															$find:=$sharedStringsCollection.query("hash === :1"; $hash)
-															If ($find.length=0)
-																$count:=$count+1
-																$uniqueCount:=$uniqueCount+1
-																$index:=$sharedStringsCollection.length
-																$sharedStringsCollection.push(New object:C1471(\
-																	"hash"; $hash; \
-																	"value"; $stringValue; \
-																	"index"; $index))
-																$si:=DOM Create XML element:C865($sst; "si")
-																$t:=DOM Create XML element:C865($si; "t")
-																DOM SET XML ELEMENT VALUE:C868($t; $stringValue)
-																$phoneticPr:=DOM Create XML element:C865($si; "phoneticPr")
-																DOM SET XML ATTRIBUTE:C866($phoneticPr; "fontId"; 1)
-															Else 
-																$index:=$sharedStringsCollection[($find[0].index)].index
-															End if 
-															DOM SET XML ELEMENT VALUE:C868($v; $index)
-															
-														: ($valueType=Is real:K8:4)
-															
-															$v:=DOM Find XML element:C864($c; "v")
-															If (OK=0)
-																$v:=DOM Create XML element:C865($c; "v")
-															End if 
-															DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef]))
-															
-														: ($valueType=Is boolean:K8:9)
-															
-															$f:=DOM Find XML element:C864($c; "f")
-															If (OK=0)
-																$f:=DOM Create XML element:C865($c; "f")
-															End if 
-															DOM SET XML ELEMENT VALUE:C868($f; $values[$cellRef] ? "TRUE()" : "FALSE()")
-															
-															$v:=DOM Find XML element:C864($c; "v")
-															If (OK=0)
-																$v:=DOM Create XML element:C865($c; "v")
-															End if 
-															DOM SET XML ELEMENT VALUE:C868($v; $values[$cellRef] ? 1 : 0)
-															
-														: ($valueType=Is date:K8:7)
-															
-															$v:=DOM Find XML element:C864($c; "v")
-															If (OK=0)
-																$v:=DOM Create XML element:C865($c; "v")
-															End if 
-															DOM SET XML ELEMENT VALUE:C868($v; This:C1470.convertToMicrosoftDate($values[$cellRef]))
-														Else 
-															TRACE:C157  //invalid value type!
-													End case 
+											: ($valueType=Is object:K8:27) && ($values[$cellRef].f#Null:C1517) && ($values[$cellRef].v#Null:C1517)
+												$f:=DOM Find XML element:C864($c; "f")
+												If (OK=0)
+													$f:=DOM Create XML element:C865($c; "f")
 												End if 
+												DOM SET XML ELEMENT VALUE:C868($f; $values[$cellRef].f)
+												
+												$v:=DOM Find XML element:C864($c; "v")
+												If (OK=0)
+													$v:=DOM Create XML element:C865($c; "v")
+												End if 
+												
+												$valueValueType:=Value type:C1509($values[$cellRef].v)
+												
+												Case of 
+													: ($valueValueType=Is text:K8:3) & ($isSharedStringsOpen)
+														$v:=DOM Find XML element:C864($c; "v")
+														If (OK=0)
+															$v:=DOM Create XML element:C865($c; "v")
+														End if 
+														DOM SET XML ATTRIBUTE:C866($c; "t"; "str")  //static text
+														DOM SET XML ELEMENT VALUE:C868($v; $values[$cellRef].v)
+														
+													: ($valueType=Is real:K8:4)
+														
+														$v:=DOM Find XML element:C864($c; "v")
+														If (OK=0)
+															$v:=DOM Create XML element:C865($c; "v")
+														End if 
+														DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v))
+														
+													: ($valueType=Is boolean:K8:9)
+														
+														$v:=DOM Find XML element:C864($c; "v")
+														If (OK=0)
+															$v:=DOM Create XML element:C865($c; "v")
+														End if 
+														DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v ? 1 : 0))
+														
+													: ($valueType=Is date:K8:7)
+														
+														$v:=DOM Find XML element:C864($c; "v")
+														If (OK=0)
+															$v:=DOM Create XML element:C865($c; "v")
+														End if 
+														DOM SET XML ELEMENT VALUE:C868($v; This:C1470.convertToMicrosoftDate($values[$cellRef].v))
+													Else 
+														TRACE:C157  //invalid value type!
+												End case 
+												
+											: ($valueType=Is text:K8:3) & ($isSharedStringsOpen)
+												
+												$v:=This:C1470._getElement($c; "v")
+												
+												$stringValue:=$values[$cellRef]
+												$hash:=Generate digest:C1147($stringValue; MD5 digest:K66:1)
+												$find:=$sharedStringsCollection.query("hash === :1"; $hash)
+												If ($find.length=0)
+													$count:=$count+1
+													$uniqueCount:=$uniqueCount+1
+													$index:=$sharedStringsCollection.length
+													$sharedStringsCollection.push(New object:C1471(\
+														"hash"; $hash; \
+														"value"; $stringValue; \
+														"index"; $index))
+													$si:=DOM Create XML element:C865($sst; "si")
+													$t:=DOM Create XML element:C865($si; "t")
+													DOM SET XML ELEMENT VALUE:C868($t; $stringValue)
+													$phoneticPr:=DOM Create XML element:C865($si; "phoneticPr")
+													DOM SET XML ATTRIBUTE:C866($phoneticPr; "fontId"; 1)
+												Else 
+													$index:=$sharedStringsCollection[($find[0].index)].index
+												End if 
+												
+												DOM SET XML ATTRIBUTE:C866($c; "t"; "s")  //shared string
+												DOM SET XML ELEMENT VALUE:C868($v; $index)
+												
+											: ($valueType=Is real:K8:4)
+												
+												$v:=This:C1470._getElement($c; "v")
+												
+												This:C1470._removeAttribute($c; "t")
+												DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef]))
+												
+											: ($valueType=Is boolean:K8:9)
+												
+												$f:=This:C1470._getElement($c; "f")
+												
+												DOM SET XML ELEMENT VALUE:C868($f; $values[$cellRef] ? "TRUE()" : "FALSE()")
+												
+												$v:=This:C1470._getElement($c; "v")
+												
+												DOM SET XML ATTRIBUTE:C866($c; "t"; "b")
+												DOM SET XML ELEMENT VALUE:C868($v; $values[$cellRef] ? 1 : 0)
+												
+											: ($valueType=Is date:K8:7)
+												
+												$v:=This:C1470._getElement($c; "v")
+												
+												This:C1470._removeAttribute($c; "t")
+												DOM SET XML ELEMENT VALUE:C868($v; This:C1470.convertToMicrosoftDate($values[$cellRef]))
 											Else 
-												//
+												TRACE:C157  //invalid value type!
 										End case 
-									End for 
+									End if 
+									
 								End for 
 							End if 
 						End for 
@@ -395,34 +385,59 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 		End if 
 		
 		If (This:C1470.fullCalcOnLoad)
-			$workbook:=This:C1470._workFolder\
-				.folder("xl")\
-				.file("workbook.xml")
-			If ($workbook.exists)
-				$xml:=$workbook.getText("utf-8"; Document with LF:K24:22)
-				$dom:=DOM Parse XML variable:C720($xml)
-				If (OK=1)
-					$calcId:=False:C215
-					$calcPr:=DOM Find XML element:C864($dom; "/workbook/calcPr")
-					If (OK=1)
-						DOM SET XML ATTRIBUTE:C866($calcPr; "fullCalcOnLoad"; 1)
-						For ($ii; 1; DOM Count XML attributes:C727($calcPr))
-							DOM GET XML ATTRIBUTE BY INDEX:C729($calcPr; $ii; $name; $stringValue)
-							If ($stringValue="calcId")
-								$calcId:=True:C214
-							End if 
-							If ($calcId)
-								DOM REMOVE XML ATTRIBUTE:C1084($dom; "calcId")
-							End if 
-						End for 
-					End if 
-					$path:=$workbook.platformPath
-					DOM EXPORT TO FILE:C862($dom; $path)
-					DOM CLOSE XML:C722($dom)
-				End if 
-			End if 
+			This:C1470._setFullCalcOnLoad()
 		End if 
 		
 	End if 
 	
 	return {success: $success}
+	
+Function _getCellRef($dom : Text; $attributeName : Text) : Text
+	
+	var $attribute; $stringValue : Text
+	For ($i; 1; DOM Count XML attributes:C727($dom))
+		DOM GET XML ATTRIBUTE BY INDEX:C729($dom; $i; $attribute; $stringValue)
+		If ($attribute=$attributeName)
+			return $stringValue
+		End if 
+	End for 
+	
+Function _getElement($dom : Text; $elementName : Text)
+	
+	$element:=DOM Find XML element:C864($dom; $elementName)
+	If (OK=0)
+		$element:=DOM Create XML element:C865($dom; $elementName)
+	End if 
+	
+	return $element
+	
+Function _removeAttribute($dom : Text; $attributeName : Text)
+	
+	var $attribute; $stringValue : Text
+	For ($i; 1; DOM Count XML attributes:C727($dom))
+		DOM GET XML ATTRIBUTE BY INDEX:C729($dom; $i; $attribute; $stringValue)
+		If ($attribute=$attributeName)
+			DOM REMOVE XML ATTRIBUTE:C1084($dom; $attributeName)
+			break
+		End if 
+	End for 
+	
+Function _setFullCalcOnLoad()
+	
+	$workbook:=This:C1470._workFolder\
+		.folder("xl")\
+		.file("workbook.xml")
+	If ($workbook.exists)
+		$xml:=$workbook.getText("utf-8"; Document with LF:K24:22)
+		$dom:=DOM Parse XML variable:C720($xml)
+		If (OK=1)
+			$calcPr:=DOM Find XML element:C864($dom; "/workbook/calcPr")
+			If (OK=1)
+				DOM SET XML ATTRIBUTE:C866($calcPr; "fullCalcOnLoad"; 1)
+				This:C1470._removeAttribute($calcPr; "calcId")
+			End if 
+			$path:=$workbook.platformPath
+			DOM EXPORT TO FILE:C862($dom; $path)
+			DOM CLOSE XML:C722($dom)
+		End if 
+	End if 
