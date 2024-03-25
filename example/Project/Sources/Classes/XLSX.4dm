@@ -259,50 +259,35 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 										$valueType:=Value type:C1509($values[$cellRef])
 										Case of 
 											: ($valueType=Is object:K8:27) && ($values[$cellRef].f#Null:C1517) && ($values[$cellRef].v#Null:C1517)
-												$f:=DOM Find XML element:C864($c; "f")
-												If (OK=0)
-													$f:=DOM Create XML element:C865($c; "f")
-												End if 
+												
+												//f must come first
+												$f:=This:C1470._removeElement($c; "f")._getElement($c; "f")
+												
 												DOM SET XML ELEMENT VALUE:C868($f; $values[$cellRef].f)
 												
-												$v:=DOM Find XML element:C864($c; "v")
-												If (OK=0)
-													$v:=DOM Create XML element:C865($c; "v")
-												End if 
+												$v:=This:C1470._removeElement($c; "v")._getElement($c; "v")
 												
 												$valueValueType:=Value type:C1509($values[$cellRef].v)
 												
 												Case of 
 													: ($valueValueType=Is text:K8:3) & ($isSharedStringsOpen)
-														$v:=DOM Find XML element:C864($c; "v")
-														If (OK=0)
-															$v:=DOM Create XML element:C865($c; "v")
-														End if 
+														
 														DOM SET XML ATTRIBUTE:C866($c; "t"; "str")  //static text
 														DOM SET XML ELEMENT VALUE:C868($v; $values[$cellRef].v)
 														
 													: ($valueType=Is real:K8:4)
 														
-														$v:=DOM Find XML element:C864($c; "v")
-														If (OK=0)
-															$v:=DOM Create XML element:C865($c; "v")
-														End if 
+														This:C1470._removeAttribute($c; "t")
 														DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v))
 														
 													: ($valueType=Is boolean:K8:9)
 														
-														$v:=DOM Find XML element:C864($c; "v")
-														If (OK=0)
-															$v:=DOM Create XML element:C865($c; "v")
-														End if 
+														DOM SET XML ATTRIBUTE:C866($c; "t"; "b")
 														DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v ? 1 : 0))
 														
 													: ($valueType=Is date:K8:7)
 														
-														$v:=DOM Find XML element:C864($c; "v")
-														If (OK=0)
-															$v:=DOM Create XML element:C865($c; "v")
-														End if 
+														This:C1470._removeAttribute($c; "t")
 														DOM SET XML ELEMENT VALUE:C868($v; This:C1470.convertToMicrosoftDate($values[$cellRef].v))
 													Else 
 														TRACE:C157  //invalid value type!
@@ -310,6 +295,7 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												
 											: ($valueType=Is text:K8:3) & ($isSharedStringsOpen)
 												
+												$f:=This:C1470._removeElement($c; "f")
 												$v:=This:C1470._getElement($c; "v")
 												
 												$stringValue:=$values[$cellRef]
@@ -337,6 +323,7 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												
 											: ($valueType=Is real:K8:4)
 												
+												$f:=This:C1470._removeElement($c; "f")
 												$v:=This:C1470._getElement($c; "v")
 												
 												This:C1470._removeAttribute($c; "t")
@@ -344,17 +331,19 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												
 											: ($valueType=Is boolean:K8:9)
 												
-												$f:=This:C1470._getElement($c; "f")
+												//f must come first
+												$f:=This:C1470._removeElement($c; "f")._getElement($c; "f")
 												
 												DOM SET XML ELEMENT VALUE:C868($f; $values[$cellRef] ? "TRUE()" : "FALSE()")
 												
-												$v:=This:C1470._getElement($c; "v")
+												$v:=This:C1470._removeElement($c; "v")._getElement($c; "v")
 												
 												DOM SET XML ATTRIBUTE:C866($c; "t"; "b")
 												DOM SET XML ELEMENT VALUE:C868($v; $values[$cellRef] ? 1 : 0)
 												
 											: ($valueType=Is date:K8:7)
 												
+												$f:=This:C1470._removeElement($c; "f")
 												$v:=This:C1470._getElement($c; "v")
 												
 												This:C1470._removeAttribute($c; "t")
@@ -410,6 +399,15 @@ Function _getElement($dom : Text; $elementName : Text)
 	End if 
 	
 	return $element
+	
+Function _removeElement($dom : Text; $elementName : Text) : Object
+	
+	$element:=DOM Find XML element:C864($dom; $elementName)
+	If (OK=1)
+		DOM REMOVE XML ELEMENT:C869($element)
+	End if 
+	
+	return This:C1470
 	
 Function _removeAttribute($dom : Text; $attributeName : Text)
 	

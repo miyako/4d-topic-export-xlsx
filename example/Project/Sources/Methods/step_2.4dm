@@ -15,7 +15,6 @@ For each ($student; ds:C1482.Student.all())
 	$values["B"+String:C10($idx)]:=$student.birthday
 	$values["C"+String:C10($idx)]:=$student.lastNameFirst
 	$values["D"+String:C10($idx)]:=$student.age
-	
 	$values["E"+String:C10($idx)]:=New object:C1471("f"; "IF(C"+String:C10($idx)+",\"はい\",\"いいえ\")"; "v"; $student.lastNameFirst ? "はい" : "いいえ")
 	
 	//fullCalcOnLoadの検証
@@ -36,3 +35,5 @@ $status:=$XLSX.setValues($values; 1)
 $file:=Folder:C1567(fk desktop folder:K87:19).file("export.xlsx")
 
 $status:=$XLSX.write($file)
+
+OPEN URL:C673($file.platformPath)
