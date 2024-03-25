@@ -82,6 +82,8 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 	
 	If (This:C1470._workFolder#Null:C1517) && (This:C1470._workFolder.exists)
 		
+		$sheetIndex:=$sheetIndex>0 ? $sheetIndex : 1
+		
 		$sharedStrings:=This:C1470._workFolder\
 			.folder("xl")\
 			.file("sharedStrings.xml")
@@ -275,17 +277,17 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 														DOM SET XML ATTRIBUTE:C866($c; "t"; "str")  //static text
 														DOM SET XML ELEMENT VALUE:C868($v; $values[$cellRef].v)
 														
-													: ($valueType=Is real:K8:4)
+													: ($valueValueType=Is real:K8:4)
 														
 														This:C1470._removeAttribute($c; "t")
 														DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v))
 														
-													: ($valueType=Is boolean:K8:9)
+													: ($valueValueType=Is boolean:K8:9)
 														
 														DOM SET XML ATTRIBUTE:C866($c; "t"; "b")
 														DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef].v ? 1 : 0))
 														
-													: ($valueType=Is date:K8:7)
+													: ($valueValueType=Is date:K8:7)
 														
 														This:C1470._removeAttribute($c; "t")
 														DOM SET XML ELEMENT VALUE:C868($v; This:C1470.convertToMicrosoftDate($values[$cellRef].v))
@@ -295,8 +297,7 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												
 											: ($valueType=Is text:K8:3) & ($isSharedStringsOpen)
 												
-												$f:=This:C1470._removeElement($c; "f")
-												$v:=This:C1470._getElement($c; "v")
+												$v:=This:C1470._removeElement($c; "f")._getElement($c; "v")
 												
 												$stringValue:=$values[$cellRef]
 												$hash:=Generate digest:C1147($stringValue; MD5 digest:K66:1)
@@ -323,8 +324,7 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												
 											: ($valueType=Is real:K8:4)
 												
-												$f:=This:C1470._removeElement($c; "f")
-												$v:=This:C1470._getElement($c; "v")
+												$v:=This:C1470._removeElement($c; "f")._getElement($c; "v")
 												
 												This:C1470._removeAttribute($c; "t")
 												DOM SET XML ELEMENT VALUE:C868($v; Num:C11($values[$cellRef]))
@@ -343,8 +343,7 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 												
 											: ($valueType=Is date:K8:7)
 												
-												$f:=This:C1470._removeElement($c; "f")
-												$v:=This:C1470._getElement($c; "v")
+												$v:=This:C1470._removeElement($c; "f")._getElement($c; "v")
 												
 												This:C1470._removeAttribute($c; "t")
 												DOM SET XML ELEMENT VALUE:C868($v; This:C1470.convertToMicrosoftDate($values[$cellRef]))
@@ -376,6 +375,8 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 		If (This:C1470.fullCalcOnLoad)
 			This:C1470._setFullCalcOnLoad()
 		End if 
+		
+		This:C1470._deleteCalcChain()
 		
 	End if 
 	
@@ -419,6 +420,16 @@ Function _removeAttribute($dom : Text; $attributeName : Text)
 			break
 		End if 
 	End for 
+	
+Function _deleteCalcChain()
+	
+	$calcChain:=This:C1470._workFolder\
+		.folder("xl")\
+		.file("calcChain.xml")
+	
+	If ($calcChain.exists)
+		$calcChain.delete()
+	End if 
 	
 Function _setFullCalcOnLoad()
 	
