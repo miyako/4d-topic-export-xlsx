@@ -95,14 +95,8 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 		ARRAY LONGINT:C221($pos; 0)
 		ARRAY LONGINT:C221($len; 0)
 		
-		For each ($cellRef; $values)
-			If (Match regex:C1019("\\D+(\\d+)"; $cellRef; 1; $pos; $len))
-				$rowNumber:=Num:C11(Substring:C12($cellRef; $pos{1}; $len{1}))
-				If ($rowNumber>$length)
-					$length:=$rowNumber
-				End if 
-			End if 
-		End for each 
+		$length:=This:C1470._getDataLength($values)
+		$width:=This:C1470._getDataWidth($values)
 		
 		If ($sharedStrings.exists)
 			$sharedStringsCollection:=[]
@@ -156,6 +150,11 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 						$lastCell:=Substring:C12($ref; $pos{3}; $len{3})
 						$lastRow:=Num:C11(Substring:C12($ref; $pos{4}; $len{4}))
 						$rowsToAppend:=$length-$lastRow
+						$o:={}
+						$o[$lastCell+"1"]:=Null:C1517
+						$lastCol:=This:C1470._getDataWidth($o)
+						$colsToAppend:=$width-$lastCol
+						//TODO: add missing cols without style
 						$ref:=New collection:C1472($firstCell; $firstRow; ":"; $lastCell; $length).join("")
 						DOM SET XML ATTRIBUTE:C866($dimension; "ref"; $ref)
 						$sheetData:=DOM Find XML element:C864($dom; "/worksheet/sheetData")
@@ -163,74 +162,69 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 							ARRAY TEXT:C222($rows; 0)
 							$row:=DOM Find XML element:C864($sheetData; "row"; $rows)
 							If (OK=1)
-								For ($i; 1; Size of array:C274($rows))
-									$row:=$rows{$i}
-									For ($ii; 1; DOM Count XML attributes:C727($row))
-										DOM GET XML ATTRIBUTE BY INDEX:C729($row; $ii; $name; $stringValue)
-										Case of 
-											: ($name="r")
-												
-												If (2=Num:C11($stringValue))
-													$ii:=MAXLONG:K35:2-1
-													$i:=$ii
-													
-													$rowStyle:=New object:C1471
-													
-													For ($iii; 1; DOM Count XML attributes:C727($row))
-														DOM GET XML ATTRIBUTE BY INDEX:C729($row; $iii; $name; $stringValue)
-														If ($name#"r")
-															$rowStyle[$name]:=$stringValue
-														End if 
-													End for 
-													
-													ARRAY TEXT:C222($cols; 0)
-													$col:=DOM Find XML element:C864($row; "c"; $cols)
-													
-													$styles:=New object:C1471
-													
-													For ($iii; 1; Size of array:C274($cols))
-														$col:=$cols{$iii}
-														$style:=New object:C1471
-														For ($ii; 1; DOM Count XML attributes:C727($col))
-															DOM GET XML ATTRIBUTE BY INDEX:C729($col; $ii; $name; $stringValue)
-															If ($name="r")
-																If (Match regex:C1019("([A-Z]+)(\\d+)"; $stringValue; 1; $pos; $len))
-																	$cell:=Substring:C12($stringValue; $pos{1}; $len{1})
-																	$styles[$cell]:=$style
-																End if 
-															Else 
-																$style[$name]:=$stringValue
-															End if 
-														End for 
-													End for 
-													
-													For ($iii; 3; 2+$rowsToAppend)  //row
-														
-														$r:=String:C10($iii)
-														
-														$row:=DOM Create XML element:C865($sheetData; "row")
-														
-														For each ($name; $rowStyle)  //except r
-															DOM SET XML ATTRIBUTE:C866($row; $name; $rowStyle[$name])
-														End for each 
-														DOM SET XML ATTRIBUTE:C866($row; "r"; $r)
-														
-														For each ($name; $styles)
-															
-															$node:=DOM Create XML element:C865($row; "c")
-															
-															DOM SET XML ATTRIBUTE:C866($node; "r"; $name+$r)
-															
-															$style:=$styles[$name]
-															For each ($attribute; $style)
-																DOM SET XML ATTRIBUTE:C866($node; $attribute; $style[$attribute])
-															End for each 
-														End for each 
-														
-													End for 
+								$row:=$rows{Size of array:C274($rows)}
+								For ($ii; 1; DOM Count XML attributes:C727($row))
+									DOM GET XML ATTRIBUTE BY INDEX:C729($row; $ii; $name; $stringValue)
+									Case of 
+										: ($name="r")
+											
+											$rowStyle:=New object:C1471
+											
+											For ($iii; 1; DOM Count XML attributes:C727($row))
+												DOM GET XML ATTRIBUTE BY INDEX:C729($row; $iii; $name; $stringValue)
+												If ($name#"r")
+													$rowStyle[$name]:=$stringValue
 												End if 
-										End case 
-									End for 
+											End for 
+											
+											ARRAY TEXT:C222($cols; 0)
+											$col:=DOM Find XML element:C864($row; "c"; $cols)
+											
+											$styles:=New object:C1471
+											
+											For ($iii; 1; Size of array:C274($cols))
+												$col:=$cols{$iii}
+												$style:=New object:C1471
+												For ($ii; 1; DOM Count XML attributes:C727($col))
+													DOM GET XML ATTRIBUTE BY INDEX:C729($col; $ii; $name; $stringValue)
+													If ($name="r")
+														If (Match regex:C1019("([A-Z]+)(\\d+)"; $stringValue; 1; $pos; $len))
+															$cell:=Substring:C12($stringValue; $pos{1}; $len{1})
+															$styles[$cell]:=$style
+														End if 
+													Else 
+														$style[$name]:=$stringValue
+													End if 
+												End for 
+											End for 
+											
+											For ($iii; 3; 2+$rowsToAppend)  //row
+												
+												$r:=String:C10($iii)
+												
+												$row:=DOM Create XML element:C865($sheetData; "row")
+												
+												For each ($name; $rowStyle)  //except r
+													DOM SET XML ATTRIBUTE:C866($row; $name; $rowStyle[$name])
+												End for each 
+												DOM SET XML ATTRIBUTE:C866($row; "r"; $r)
+												
+												For each ($name; $styles)
+													
+													$node:=DOM Create XML element:C865($row; "c")
+													
+													DOM SET XML ATTRIBUTE:C866($node; "r"; $name+$r)
+													
+													$style:=$styles[$name]
+													For each ($attribute; $style)
+														DOM SET XML ATTRIBUTE:C866($node; $attribute; $style[$attribute])
+													End for each 
+												End for each 
+												
+											End for 
+											
+											break
+									End case 
 								End for 
 							End if 
 						End if 
@@ -245,9 +239,6 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 					If (OK=1)
 						For ($i; 1; Size of array:C274($rows))
 							$row:=$rows{$i}
-							For ($iii; 1; DOM Count XML attributes:C727($row))
-								DOM GET XML ATTRIBUTE BY INDEX:C729($row; $iii; $name; $stringValue)
-							End for 
 							ARRAY TEXT:C222($cs; 0)
 							$c:=DOM Find XML element:C864($row; "c"; $cs)
 							If (OK=1)
@@ -381,6 +372,53 @@ Function setValues($values : Object; $sheetIndex : Integer) : Object
 	End if 
 	
 	return {success: $success}
+	
+Function _getDataWidth($values : Object) : Integer
+	
+	var $width; $colNumber : Integer
+	var $cellRef : Text
+	
+	ARRAY LONGINT:C221($pos; 0)
+	ARRAY LONGINT:C221($len; 0)
+	
+	$alphabet:="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	
+	For each ($cellRef; $values)
+		If (Match regex:C1019("(\\D+)\\d+"; $cellRef; 1; $pos; $len))
+			$colNumber:=0
+			$digit:=0
+			For each ($letter; Split string:C1554(Substring:C12($cellRef; $pos{1}; $len{1}); ""))
+				$colNumber+=(Position:C15($letter; $alphabet; *)*(Length:C16($alphabet)^$digit))
+				$digit+=1
+			End for each 
+			If ($colNumber>$width)
+				$width:=$colNumber
+			End if 
+		End if 
+	End for each 
+	
+	return $width
+	
+	
+	
+Function _getDataLength($values : Object) : Integer
+	
+	var $length; $rowNumber : Integer
+	var $cellRef : Text
+	
+	ARRAY LONGINT:C221($pos; 0)
+	ARRAY LONGINT:C221($len; 0)
+	
+	For each ($cellRef; $values)
+		If (Match regex:C1019("\\D+(\\d+)"; $cellRef; 1; $pos; $len))
+			$rowNumber:=Num:C11(Substring:C12($cellRef; $pos{1}; $len{1}))
+			If ($rowNumber>$length)
+				$length:=$rowNumber
+			End if 
+		End if 
+	End for each 
+	
+	return $length
 	
 Function _getCellRef($dom : Text; $attributeName : Text) : Text
 	
