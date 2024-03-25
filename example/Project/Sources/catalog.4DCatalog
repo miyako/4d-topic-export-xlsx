@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE base SYSTEM "http://www.4d.com/dtd/2007/base.dtd" >
+<base name="example" uuid="67402DEA68CC48359FE1EDCA7E2793E3" collation_locale="ja">
+	<schema name="DEFAULT_SCHEMA"/>
+	<table name="Student" uuid="8D89DC40E14947B1A1312AA76B66B5BC" id="1">
+		<field name="Id" uuid="C420A6851E9940EC9011652C99115164" type="4" unique="true" autosequence="true" not_null="true" id="1"/>
+		<field name="firstName" uuid="6A46437D7979417982AE2D1E9E7F5CC4" type="10" id="2"/>
+		<field name="lastName" uuid="6684397E2810488BB238F113ABA67476" type="10" id="3"/>
+		<field name="lastNameFirst" uuid="FE477B9465D34C2382FD096894C93DD7" type="1" never_null="true" id="4"/>
+		<field name="birthday" uuid="91D9AB93E0BB4D6797823194ACFD6870" type="8" id="5"/>
+		<primary_key field_name="Id" field_uuid="C420A6851E9940EC9011652C99115164"/>
+		<table_extra>
+			<editor_table_info displayable_fields_count="6">
+				<color red="255" green="255" blue="255" alpha="0"/>
+				<coordinates left="352.4140625" top="203.89453125" width="120" height="167.33203125"/>
+			</editor_table_info>
+		</table_extra>
+	</table>
+	<index kind="regular" uuid="363A52251586434BA708459DBE4D8189" type="3">
+		<field_ref uuid="6A46437D7979417982AE2D1E9E7F5CC4" name="firstName">
+			<table_ref uuid="8D89DC40E14947B1A1312AA76B66B5BC" name="Student"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="3928478E99334B1C8C3BA56C13B1D027" type="3">
+		<field_ref uuid="FE477B9465D34C2382FD096894C93DD7" name="lastNameFirst">
+			<table_ref uuid="8D89DC40E14947B1A1312AA76B66B5BC" name="Student"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="865BFB26EAAA4E9EA99447DE417C55E5" type="1">
+		<field_ref uuid="91D9AB93E0BB4D6797823194ACFD6870" name="birthday">
+			<table_ref uuid="8D89DC40E14947B1A1312AA76B66B5BC" name="Student"/>
+		</field_ref>
+	</index>
+	<index kind="regular" unique_keys="true" uuid="DB321BB9A9C3432985FBCCD4B769542E" type="7">
+		<field_ref uuid="C420A6851E9940EC9011652C99115164" name="Id">
+			<table_ref uuid="8D89DC40E14947B1A1312AA76B66B5BC" name="Student"/>
+		</field_ref>
+	</index>
+	<index kind="regular" uuid="E3666957C4814A868607470DB0028D29" type="3">
+		<field_ref uuid="6684397E2810488BB238F113ABA67476" name="lastName">
+			<table_ref uuid="8D89DC40E14947B1A1312AA76B66B5BC" name="Student"/>
+		</field_ref>
+	</index>
+	<base_extra>
+		<journal_file journal_file_enabled="true"/>
+	</base_extra>
+</base>
